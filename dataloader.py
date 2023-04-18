@@ -11,8 +11,8 @@ class Data:
         self.ImportData(filePath)
         
     def ImportData(self, filePath):
-        self.data = pd.read_csv(filePath+"summary.csv")
-        self.meta = pd.read_csv(filePath+"metadata.csv")
+        self.data = pd.read_csv(filePath+"/summary.csv")
+        self.meta = pd.read_csv(filePath+"/metadata.csv")
 
 
 class DataLoader:
