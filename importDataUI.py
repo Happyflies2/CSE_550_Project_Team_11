@@ -64,7 +64,3 @@ class dataLoaderUI:
         button = tk.Button(text="Back", width = 25, height = 5, bg = "black", 
                            fg = "white", command=self.startWindow)
         button.pack()
-        
-        
-        
-win = dataLoaderUI()
