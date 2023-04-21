@@ -8,7 +8,6 @@ Created on Tue Apr 18 13:19:15 2023
 import tkinter as tk
 import dataloader as dl
 from matplotlib.figure import Figure
-
 from matplotlib.backends.backend_tkagg import (FigureCanvasTkAgg, NavigationToolbar2Tk)
 
 class Window:
@@ -17,14 +16,14 @@ class Window:
         self.height = height
         #creation of the window
         self.createWindow()
+        self.window.mainloop()
     
     #Function: Create a window to the specified dimensions
     def createWindow(self):
         self.window = tk.Tk()
         self.window.geometry(f"{self.width}x{self.height}")
-        self.startWindow()
         
-        self.window.mainloop
+        #self.window.mainloop
     
     #Function: clear all widgets
     def clearWindow(self):
@@ -54,6 +53,7 @@ class dataLoaderUI(Window):
         button = tk.Button(self.window, text="Import Data", width = 25, height = 5, bg = "black", 
                            fg = "white", command=self.openFilePath)
         button.place(x=50, y=100)
+        #self.window.mainloop()
         
     #Function: file dialog
     def openFilePath(self):
@@ -63,18 +63,50 @@ class dataLoaderUI(Window):
         message = tk.Label(self.window, text="Data loaded from path:\n" + self.folderPath)
         message.place(x=50, y=50)
         
+        
+        
+        #Attribute Selection
+        #checkBoxes = []
+        self.checkVariables = []
+            
+        #selecting the attributes
+        for index, attribute in enumerate(self.dataLoader.dataList[0].summary.columns[3:-1]):
+            #creating variable to store check data
+            self.checkVariables.append(tk.IntVar(self.window))
+            
+            check = tk.Checkbutton(self.window, text=attribute, variable=self.checkVariables[index])
+            #check = tk.Checkbutton(self.window, text=attribute, variable=var, command=pr)
+            check.place(x=50, y=300+index*50)
+            #checkBoxes.append(check)
         #Button to view data once imported
-        button = tk.Button(self.window, text="View Data", width = 25, height = 5, bg = "black", 
-                           fg = "white", command=self.viewData)
+        
+        button = tk.Button(self.window, text="View Data", width = 25, height = 5, bg = "black", fg = "white", command=self.viewData)
         button.place(x=50, y=100)
+        #self.window.mainloop()
+        
+    def attributeSelection(self, dataFrame):
+        #attribute selection
+        headers = dataFrame.columns[3:-1]
+        selected_attributes = []
+        
+        for index,value in enumerate(self.checkVariables):
+            if (value.get() == 1):
+                selected_attributes.append(headers[index])
+        
+        return selected_attributes
+        
     
     #Function: testing function to see if dataframe successfully imported and viewable
     def viewData(self):
+        #print(self.checkVariables[0].get())
         self.clearWindow()
+        
         for data in self.dataLoader.dataList:
             dataFrame = data.summary
+            
             message = tk.Label(self.window, text=dataFrame)
             message.place(x=50, y=100)
+            
         #button to go back
         button = tk.Button(self.window, text="Back", width = 25, height = 5, bg = "black", 
                            fg = "white", command=self.startWindow)
@@ -83,12 +115,15 @@ class dataLoaderUI(Window):
         nextButton = tk.Button(self.window, text="Next", width = 25, height = 5, bg = "black", 
                            fg = "white", command=self.gotoGraphPanel)
         nextButton.place(x=50, y=300)
+        #self.window.mainloop()
+
         
     def gotoGraphPanel(self):
-        self.graphPanel = GraphPanel(self.dataLoader.dataList, self.window)
+        df = self.dataLoader.dataList[0].summary
+        self.graphPanel = GraphPanel(self.dataLoader.dataList,self.attributeSelection(df), self.window)
         
 class GraphPanel(Window):
-    def __init__(self, dataList, win):
+    def __init__(self, dataList,attributes, win):
         self.data = dataList
         #if we pass a tkinter window, then don't create new window
         if (win):
@@ -96,6 +131,7 @@ class GraphPanel(Window):
         else:
             self.createWindow()
             
+        self.attributes = attributes
         self.setUpWindow()
     
     def setUpWindow(self):
@@ -105,13 +141,17 @@ class GraphPanel(Window):
     #Function: plots all of the data
     def plot(self):
         data = self.data[0].summary
-        columns = data.columns[3:-1]
+        #columns = data.columns[3:-1]
+        data = data[self.attributes]
+        columns = data.columns
         
-        fig = Figure(figsize = (5, 5), dpi = 100)
+        fig = Figure(figsize = (10, 10), dpi = 100, tight_layout=True)
+
         numOfPlots = len(columns)
         
         for i,col in enumerate(columns):
             current_plot = fig.add_subplot(numOfPlots, 1, i+1)
+            current_plot.set_title(f"{columns[i]}")
             current_plot.plot(data[col])
 
         canvas = FigureCanvasTkAgg(fig, master = self.window)  
@@ -120,5 +160,7 @@ class GraphPanel(Window):
         
         toolbar = NavigationToolbar2Tk(canvas, self.window)
         toolbar.update()
+
+        #self.window.mainloop()
 
         
