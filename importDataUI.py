@@ -145,8 +145,22 @@ class dataLoaderUI(Window):
         #Button to view data once imported
         
         button = tk.Button(self.window, text="Import Data", width = 25, height = 5, bg = "black", fg = "white", command=self.gotoGraphPanel)
-        button.place(x=50, y=10)
+        button.place(x=50, y=200)
 
+
+
+
+        #radio selection for the time conversions
+        message = tk.Label(self.window, text="Select a timezone")
+        message.pack(anchor=tk.W)
+
+        self.time_zone_var = tk.IntVar(self.window)
+        time_select = tk.Radiobutton(self.window, text="Local Time",padx = 20, variable=self.time_zone_var, value=1)
+        time_select.pack(anchor=tk.W)
+        
+        time_select = tk.Radiobutton(self.window, text="UTC",padx = 20, variable=self.time_zone_var, value=2)
+        time_select.pack(anchor=tk.W)
+        
         self.window.mainloop
             
 
@@ -247,5 +261,8 @@ class GraphPanel(Window):
         exitButton.pack()
         #exitButton.place(x=200,y=200)
         #self.window.mainloop()
+        
+        statisticsButton = tk.Button(self.window, text="View Statistics") #add command=function as a parameter
+        statisticsButton.pack()
 
         
