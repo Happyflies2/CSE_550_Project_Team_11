@@ -9,7 +9,6 @@ import importDataUI as idu
 #import tkinter as tk
 import numpy as np
 
-
 def main():
     #opens window
     win = idu.dataLoaderUI()

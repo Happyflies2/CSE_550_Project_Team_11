@@ -48,13 +48,16 @@ class dataLoaderUI(Window):
         self.clearWindow()
         #message appears in window
         message = tk.Label(self.window, text="Select the folder with the data.")
-        message.place(x=50, y=50)
+        #message.place(x=50, y=50)
+        message.pack()
         
         #button when clicked, will open a file dialog
-        button = tk.Button(self.window, text="Import Data", width = 25, height = 5, bg = "black", 
+        button = tk.Button(self.window, text="Select Folder", width = 25, height = 5, bg = "black", 
                            fg = "white", command=self.openFilePath)
-        button.place(x=50, y=100)
+        #button.place(x=50, y=100)
+        button.pack()
         #self.window.mainloop()
+
     #method takes root path and returns two lists:
     #dates: list of all date folders
     #users: list of all users for each date folder
@@ -129,18 +132,20 @@ class dataLoaderUI(Window):
         
         
         #selecting the attributes
+        message = tk.Label(self.window, text="Select Attributes to Import")
+        message.place(x=500, y = 10)
         for index, attr in enumerate(attributes):
             #creating variable to store check data
             self.checkVariables.append(tk.IntVar(self.window))
             
             check = tk.Checkbutton(self.window, text=attr, variable=self.checkVariables[index])
             #check.pack()
-            check.place(x=50, y=300+index*50)
+            check.place(x=500, y=50+index*50)
             #checkBoxes.append(check)
         #Button to view data once imported
         
-        button = tk.Button(self.window, text="View Data", width = 25, height = 5, bg = "black", fg = "white", command=self.gotoGraphPanel)
-        button.place(x=50, y=100)
+        button = tk.Button(self.window, text="Import Data", width = 25, height = 5, bg = "black", fg = "white", command=self.gotoGraphPanel)
+        button.place(x=50, y=10)
 
         self.window.mainloop
             
@@ -177,10 +182,24 @@ class GraphPanel(Window):
     
     def setUpWindow(self):
         self.clearWindow()
-        self.plot()
+        self.selectPlotType()
+        #self.plot()
     
+    def selectPlotType(self):
+        message = tk.Label(self.window, text="Select a Chart Type")
+        message.pack()
+        
+        methods = ["plot", "scatter", "bar", "step", "stem"]
+        plot_select_var = tk.StringVar(self.window)
+        plot_selection = tk.OptionMenu(self.window, plot_select_var, *methods, command=self.plot)
+        plot_selection.pack()
+        self.window.mainloop
+       
+        
     #Function: plots all of the data
-    def plot(self):
+    def plot(self, method):
+        self.clearWindow()
+        
         data = self.data.summary
         time = self.data.times
         #columns = data.columns[3:-1]
@@ -194,8 +213,15 @@ class GraphPanel(Window):
         for i,col in enumerate(columns):
             current_plot = fig.add_subplot(numOfPlots, 1, i+1)
             current_plot.set_title(f"{columns[i]}")
-            current_plot.plot(self.data.datetime, data[col])
-            #current_plot.plot(self.data[0].datetime, data[col])
+            
+            #user method parameter to invoke correct method
+            chart = "current_plot."+method+"(self.data.datetime, data[col])"
+            #create the chart based on selection
+            eval(chart)
+            
+            #current_plot.plot(self.data.datetime, data[col])
+            #current_plot.bar(self.data.datetime, data[col])
+        
             current_plot.set_xlabel("Date")
             
             
