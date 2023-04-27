@@ -9,6 +9,7 @@ import tkinter as tk
 import dataloader as dl
 from matplotlib.figure import Figure
 from matplotlib.backends.backend_tkagg import (FigureCanvasTkAgg, NavigationToolbar2Tk)
+import matplotlib.dates as mdates
 
 class Window:
     def __init__(self, width=800, height=600):
@@ -83,7 +84,8 @@ class dataLoaderUI(Window):
         button = tk.Button(self.window, text="View Data", width = 25, height = 5, bg = "black", fg = "white", command=self.viewData)
         button.place(x=50, y=100)
         #self.window.mainloop()
-        
+    
+    #selecting attributes
     def attributeSelection(self, dataFrame):
         #attribute selection
         headers = dataFrame.columns[3:-1]
@@ -117,7 +119,7 @@ class dataLoaderUI(Window):
         nextButton.place(x=50, y=300)
         #self.window.mainloop()
 
-        
+    #go to graph panel UI
     def gotoGraphPanel(self):
         df = self.dataLoader.dataList[0].summary
         self.graphPanel = GraphPanel(self.dataLoader.dataList,self.attributeSelection(df), self.window)
@@ -141,26 +143,44 @@ class GraphPanel(Window):
     #Function: plots all of the data
     def plot(self):
         data = self.data[0].summary
+        time = self.data[0].times
         #columns = data.columns[3:-1]
         data = data[self.attributes]
         columns = data.columns
         
-        fig = Figure(figsize = (10, 10), dpi = 100, tight_layout=True)
+        fig = Figure(figsize = (5, 5), dpi = 100, tight_layout=True)
 
         numOfPlots = len(columns)
         
         for i,col in enumerate(columns):
             current_plot = fig.add_subplot(numOfPlots, 1, i+1)
             current_plot.set_title(f"{columns[i]}")
-            current_plot.plot(data[col])
+            current_plot.plot(self.data[0].datetime, data[col])
+            #current_plot.plot(self.data[0].datetime, data[col])
+            current_plot.set_xlabel("Date")
+            
+            
+            #Reducing number of ticks
+            current_plot.xaxis.set_major_locator(mdates.HourLocator(interval = 3000))
+            current_plot.xaxis.set_minor_locator(mdates.MinuteLocator(interval = 5000))
+            
+            #format labels to look cleaner
+            fig.autofmt_xdate()
+           
+
 
         canvas = FigureCanvasTkAgg(fig, master = self.window)  
         canvas.draw()
         canvas.get_tk_widget().pack()
         
+        #tool bar to explore plot
         toolbar = NavigationToolbar2Tk(canvas, self.window)
         toolbar.update()
-
+        
+        #button to close window
+        exitButton = tk.Button(self.window, text="Quit", command=self.window.destroy)
+        exitButton.pack()
+        #exitButton.place(x=200,y=200)
         #self.window.mainloop()
 
         
