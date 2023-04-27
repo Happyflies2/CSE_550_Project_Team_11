@@ -31,12 +31,8 @@ class Data:
         self.datetime = np.array([datetime[i].replace('T', ' ')[:-1] for i in range(len(datetime))])
 
 class DataLoader:
-    def __init__(self):
-        #list of data streams
-        self.dataList = []
-    
     #function: adds data stream to list
     def ImportData(self, filePath):
         data = Data(filePath)
-        self.dataList.append(data)
+        self.data = data
 

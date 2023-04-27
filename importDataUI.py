@@ -17,7 +17,7 @@ class Window:
         self.height = height
         #creation of the window
         self.createWindow()
-        self.window.mainloop()
+        #self.window.mainloop()
     
     #Function: Create a window to the specified dimensions
     def createWindow(self):
@@ -47,7 +47,7 @@ class dataLoaderUI(Window):
     def startWindow(self):
         self.clearWindow()
         #message appears in window
-        message = tk.Label(self.window, text="Select the folder which contains both summary.csv and metadata.csv")
+        message = tk.Label(self.window, text="Select the folder with the data.")
         message.place(x=50, y=50)
         
         #button when clicked, will open a file dialog
@@ -55,36 +55,96 @@ class dataLoaderUI(Window):
                            fg = "white", command=self.openFilePath)
         button.place(x=50, y=100)
         #self.window.mainloop()
+    #method takes root path and returns two lists:
+    #dates: list of all date folders
+    #users: list of all users for each date folder
+    def findDateAndUserFolders(self, path):    
+        from os import listdir
         
+        #list of date folders
+        dates = listdir(path)
+        users = []
+
+        #go through files, and find users
+        for folders in dates:
+            newpath = path+"/"+folders
+            user = listdir(newpath)
+            users.append(user)
+            
+        return dates, users
+        
+    #method to load data    
+    def loadData(self, option):
+        self.dataLoader.ImportData(self.folderPath+'/'+ self.date_select_var.get() +'/'+option)
+        #print(f"{option} loaded")
+        #print(self.dataLoader.data.summary)
+        
+        
+    #creates drop-down menu for the users
+    def select_user(self, sel):
+        #if the user_selection exists, destroy it
+        #prevents too many option menus from appearing
+        if (self.user_selections):
+            self.user_selections[0].destroy()
+        
+        message = tk.Label(self.window, text="Select the user.")
+        message.pack()
+        #find index of date, will use that index for finding users
+        index = self.date_options.index(sel)
+        #user variable
+        user_select_var = tk.StringVar(self.window)
+        #options list
+        user_selection = tk.OptionMenu(self.window, user_select_var, *self.user_options[index], command = self.loadData)
+        #add options menu to list for easy deletion
+        self.user_selections.append(user_selection)
+        user_selection.pack()
+        
+
+        
+    
     #Function: file dialog
     def openFilePath(self):
         self.clearWindow()
         self.folderPath = tk.filedialog.askdirectory()
-        self.dataLoader.ImportData(self.folderPath)
-        message = tk.Label(self.window, text="Data loaded from path:\n" + self.folderPath)
-        message.place(x=50, y=50)
         
         
-        
-        #Attribute Selection
-        #checkBoxes = []
-        self.checkVariables = []
+        self.date_options, self.user_options = self.findDateAndUserFolders(self.folderPath)
             
+        #trick: to use list to delete old selections
+        self.user_selections = []
+
+
+        #variable to hold selected item
+        self.date_select_var = tk.StringVar(self.window)
+        #drop down widget with dates
+        message = tk.Label(self.window, text="Select the date.")
+        message.pack()
+        
+        date_selection = tk.OptionMenu(self.window, self.date_select_var, *self.date_options, command=self.select_user)
+        date_selection.pack()
+
+        #Attribute Selection
+        self.checkVariables = []
+        attributes = ["Acc magnitude avg","Eda avg","Temp avg","Movement intensity","Steps count","Rest","On Wrist"]
+        
+        
         #selecting the attributes
-        for index, attribute in enumerate(self.dataLoader.dataList[0].summary.columns[3:-1]):
+        for index, attr in enumerate(attributes):
             #creating variable to store check data
             self.checkVariables.append(tk.IntVar(self.window))
             
-            check = tk.Checkbutton(self.window, text=attribute, variable=self.checkVariables[index])
-            #check = tk.Checkbutton(self.window, text=attribute, variable=var, command=pr)
+            check = tk.Checkbutton(self.window, text=attr, variable=self.checkVariables[index])
+            #check.pack()
             check.place(x=50, y=300+index*50)
             #checkBoxes.append(check)
         #Button to view data once imported
         
-        button = tk.Button(self.window, text="View Data", width = 25, height = 5, bg = "black", fg = "white", command=self.viewData)
+        button = tk.Button(self.window, text="View Data", width = 25, height = 5, bg = "black", fg = "white", command=self.gotoGraphPanel)
         button.place(x=50, y=100)
-        #self.window.mainloop()
-    
+
+        self.window.mainloop
+            
+
     #selecting attributes
     def attributeSelection(self, dataFrame):
         #attribute selection
@@ -98,35 +158,14 @@ class dataLoaderUI(Window):
         return selected_attributes
         
     
-    #Function: testing function to see if dataframe successfully imported and viewable
-    def viewData(self):
-        #print(self.checkVariables[0].get())
-        self.clearWindow()
-        
-        for data in self.dataLoader.dataList:
-            dataFrame = data.summary
-            
-            message = tk.Label(self.window, text=dataFrame)
-            message.place(x=50, y=100)
-            
-        #button to go back
-        button = tk.Button(self.window, text="Back", width = 25, height = 5, bg = "black", 
-                           fg = "white", command=self.startWindow)
-        button.place(x=50, y=100)
-        
-        nextButton = tk.Button(self.window, text="Next", width = 25, height = 5, bg = "black", 
-                           fg = "white", command=self.gotoGraphPanel)
-        nextButton.place(x=50, y=300)
-        #self.window.mainloop()
-
     #go to graph panel UI
     def gotoGraphPanel(self):
-        df = self.dataLoader.dataList[0].summary
-        self.graphPanel = GraphPanel(self.dataLoader.dataList,self.attributeSelection(df), self.window)
+        df = self.dataLoader.data.summary
+        self.graphPanel = GraphPanel(self.dataLoader.data,self.attributeSelection(df), self.window)
         
 class GraphPanel(Window):
-    def __init__(self, dataList,attributes, win):
-        self.data = dataList
+    def __init__(self, data,attributes, win):
+        self.data = data
         #if we pass a tkinter window, then don't create new window
         if (win):
             self.window = win
@@ -142,8 +181,8 @@ class GraphPanel(Window):
     
     #Function: plots all of the data
     def plot(self):
-        data = self.data[0].summary
-        time = self.data[0].times
+        data = self.data.summary
+        time = self.data.times
         #columns = data.columns[3:-1]
         data = data[self.attributes]
         columns = data.columns
@@ -155,7 +194,7 @@ class GraphPanel(Window):
         for i,col in enumerate(columns):
             current_plot = fig.add_subplot(numOfPlots, 1, i+1)
             current_plot.set_title(f"{columns[i]}")
-            current_plot.plot(self.data[0].datetime, data[col])
+            current_plot.plot(self.data.datetime, data[col])
             #current_plot.plot(self.data[0].datetime, data[col])
             current_plot.set_xlabel("Date")
             
