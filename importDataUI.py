@@ -181,6 +181,7 @@ class dataLoaderUI(Window):
     
 
 class GraphPanel(Window):
+    #constructor method: import important values for data loader
     def __init__(self, data,attributes, win):
         self.data = data
         #if we pass a tkinter window, then don't create new window
@@ -192,14 +193,17 @@ class GraphPanel(Window):
         self.attributes = attributes
         self.setUpWindow()
     
+    #Method: clear window and get plot type
     def setUpWindow(self):
         self.clearWindow()
         self.selectPlotType()
     
+    #Method: select the plot type
     def selectPlotType(self):
         message = tk.Label(self.window, text="Select a Chart Type")
         message.pack()
         
+        #list of methods
         methods = ["plot", "scatter", "bar", "step", "stem"]
         plot_select_var = tk.StringVar(self.window)
         plot_selection = tk.OptionMenu(self.window, plot_select_var, *methods, command=self.plot)
@@ -211,15 +215,17 @@ class GraphPanel(Window):
     def plot(self, method):
         self.clearWindow()
         
+        #get the important columns
         data = self.data.summary    
         data = data[self.attributes]
         columns = data.columns
         
-        
+        #create a matplotlib figure
         fig = Figure(figsize = (5, 5), dpi = 100, tight_layout=True)
 
         numOfPlots = len(columns)
         
+        #loop to plot all the attributes
         for i,col in enumerate(columns):
             current_plot = fig.add_subplot(numOfPlots, 1, i+1)
             current_plot.set_title(f"{columns[i]}")
@@ -241,7 +247,7 @@ class GraphPanel(Window):
             fig.autofmt_xdate()
            
 
-
+        #draw canvas to window
         canvas = FigureCanvasTkAgg(fig, master = self.window)  
         canvas.draw()
         canvas.get_tk_widget().pack()
@@ -254,7 +260,7 @@ class GraphPanel(Window):
         exitButton = tk.Button(self.window, text="Quit", command=self.window.destroy)
         exitButton.pack()
 
-        
+        #View Statistics button (doesn't work)
         statisticsButton = tk.Button(self.window, text="View Statistics") #add command=function as a parameter
         statisticsButton.pack()
 
