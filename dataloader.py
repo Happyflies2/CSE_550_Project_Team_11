@@ -9,10 +9,13 @@ import numpy as np
 from datetime import datetime
 
 class Data:
+    #data constructor method:
+    #input: filePath for data
     def __init__(self, filePath):
         self.ImportData(filePath)
         self.preprocessTime()
-        
+    #Import data method:
+    #opens the csv files, and puts them in the data frame
     def ImportData(self, filePath):
         self.summary = pd.read_csv(filePath+"/summary.csv")
         self.meta = pd.read_csv(filePath+"/metadata.csv")
@@ -24,13 +27,13 @@ class Data:
         timeIndex = datetime[0].find('Z')
         
         #split datetime, into date and time
-        #self.dates = pd.DataFrame([datetime[i][0:dateIndex] for i in range(len(datetime))],columns = ['Date'])
-        #self.times = pd.DataFrame([datetime[i][dateIndex+1:timeIndex] for i in range(len(datetime))],columns = ['Time'])
         self.dates = np.array([datetime[i][0:dateIndex] for i in range(len(datetime))])
         self.times = np.array([datetime[i][dateIndex+1:timeIndex] for i in range(len(datetime))])
-        #self.datetime = np.array(datetime)
+        #removes extra character T
         self.datetime = np.array([datetime[i].replace('T', ' ')[:-1] for i in range(len(datetime))])
         
+    #Placeholder function for filter requirement
+    #didn't quite work
     def filterData(self, start_date=None, end_date=None):
         if start_date is None:
             start_date = input("Enter start date (YYYY-MM-DD): ")

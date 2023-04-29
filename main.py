@@ -6,8 +6,6 @@ Created on Tue Apr 18 14:26:09 2023
 """
 
 import importDataUI as idu
-#import tkinter as tk
-import numpy as np
 
 def main():
     #opens window

@@ -17,14 +17,12 @@ class Window:
         self.height = height
         #creation of the window
         self.createWindow()
-        #self.window.mainloop()
     
     #Function: Create a window to the specified dimensions
     def createWindow(self):
         self.window = tk.Tk()
         self.window.geometry(f"{self.width}x{self.height}")
-        
-        #self.window.mainloop
+
     
     #Function: clear all widgets
     def clearWindow(self):
@@ -32,7 +30,7 @@ class Window:
             widget.destroy()
 
     
-
+#Method: Creates initializes dataLoader window
 class dataLoaderUI(Window):
     def __init__(self, width=800, height=600):
         self.width = width
@@ -48,15 +46,14 @@ class dataLoaderUI(Window):
         self.clearWindow()
         #message appears in window
         message = tk.Label(self.window, text="Select the folder with the data.")
-        #message.place(x=50, y=50)
         message.pack()
         
         #button when clicked, will open a file dialog
         button = tk.Button(self.window, text="Select Folder", width = 25, height = 5, bg = "black", 
                            fg = "white", command=self.openFilePath)
-        #button.place(x=50, y=100)
+
         button.pack()
-        #self.window.mainloop()
+
 
     #method takes root path and returns two lists:
     #dates: list of all date folders
@@ -79,8 +76,6 @@ class dataLoaderUI(Window):
     #method to load data    
     def loadData(self, option):
         self.dataLoader.ImportData(self.folderPath+'/'+ self.date_select_var.get() +'/'+option)
-        #print(f"{option} loaded")
-        #print(self.dataLoader.data.summary)
         
         
     #creates drop-down menu for the users
@@ -137,18 +132,18 @@ class dataLoaderUI(Window):
         for index, attr in enumerate(attributes):
             #creating variable to store check data
             self.checkVariables.append(tk.IntVar(self.window))
-            
+            #creates check widget
             check = tk.Checkbutton(self.window, text=attr, variable=self.checkVariables[index])
-            #check.pack()
             check.place(x=500, y=50+index*50)
-            #checkBoxes.append(check)
+            
 
 
 
         #radio selection for the time conversions
         message = tk.Label(self.window, text="Select a timezone")
         message.pack(anchor=tk.W)
-
+        
+        #radio buttons for time zone conversion (DOESN'T WORK RIGHT NOW)
         self.time_zone_var = tk.IntVar(self.window)
         time_select = tk.Radiobutton(self.window, text="Local Time",padx = 20, variable=self.time_zone_var, value=1)
         time_select.pack(anchor=tk.W)
@@ -157,37 +152,13 @@ class dataLoaderUI(Window):
         time_select.pack(anchor=tk.W)
         
         
-        
-        #entry box for dates
-        #self.start_date_var = tk.StringVar()
-        #self.end_date_var = tk.StringVar()
-        
-        
-        start_date_label = tk.Label(self.window, text="Start Date: ")
-        start_date_label.pack()
-        self.start_date_entry = tk.Entry(self.window, bd=5)
-        self.start_date_entry.pack()
-        
-        end_date_label = tk.Label(self.window, text="End Date: ")
-        end_date_label.pack()
-        self.end_date_entry = tk.Entry(self.window, bd=5)
-        self.end_date_entry.pack()
-        
-        
         #Button to view data once imported
         
-        button = tk.Button(self.window, text="Import Data", width = 25, height = 5, bg = "black", fg = "white", command=self.confirmEntryBoxes)#command=self.gotoGraphPanel)
+        button = tk.Button(self.window, text="Import Data", width = 25, height = 5, bg = "black", fg = "white", command=self.gotoGraphPanel)
         button.place(x=50, y=200)
 
 
-        self.window.mainloop
-            
-    def confirmEntryBoxes(self):
-        self.start_date = self.start_date_entry.get()
-        self.end_date = self.end_date_entry.get()
-        print(self.start_date, self.end_date)
-        self.gotoGraphPanel()
-        
+        self.window.mainloop 
         
     #selecting attributes
     def attributeSelection(self, dataFrame):
@@ -195,6 +166,7 @@ class dataLoaderUI(Window):
         headers = dataFrame.columns[3:-1]
         selected_attributes = []
         
+        #go through the check variables to find the selected attributes
         for index,value in enumerate(self.checkVariables):
             if (value.get() == 1):
                 selected_attributes.append(headers[index])
@@ -202,13 +174,14 @@ class dataLoaderUI(Window):
         return selected_attributes
         
     
-    #go to graph panel UI
+    #go to graph panel UI, transition to graph panel UI
     def gotoGraphPanel(self):
         df = self.dataLoader.data.summary
-        self.graphPanel = GraphPanel(self.dataLoader.data,self.attributeSelection(df), self.window, self.start_date, self.end_date)
-        
+        self.graphPanel = GraphPanel(self.dataLoader.data,self.attributeSelection(df), self.window)
+    
+
 class GraphPanel(Window):
-    def __init__(self, data,attributes, win, start, end):
+    def __init__(self, data,attributes, win):
         self.data = data
         #if we pass a tkinter window, then don't create new window
         if (win):
@@ -217,14 +190,11 @@ class GraphPanel(Window):
             self.createWindow()
             
         self.attributes = attributes
-        self.start = start
-        self.end = end
         self.setUpWindow()
     
     def setUpWindow(self):
         self.clearWindow()
         self.selectPlotType()
-        #self.plot()
     
     def selectPlotType(self):
         message = tk.Label(self.window, text="Select a Chart Type")
@@ -241,7 +211,6 @@ class GraphPanel(Window):
     def plot(self, method):
         self.clearWindow()
         
-        #data = self.data.filterData(self.start, self.end)
         data = self.data.summary    
         data = data[self.attributes]
         columns = data.columns
@@ -259,9 +228,7 @@ class GraphPanel(Window):
             chart = "current_plot."+method+"(self.data.datetime, data[col])"
             #create the chart based on selection
             eval(chart)
-            
-            #current_plot.plot(self.data.datetime, data[col])
-            #current_plot.bar(self.data.datetime, data[col])
+
         
             current_plot.set_xlabel("Date")
             
@@ -286,8 +253,7 @@ class GraphPanel(Window):
         #button to close window
         exitButton = tk.Button(self.window, text="Quit", command=self.window.destroy)
         exitButton.pack()
-        #exitButton.place(x=200,y=200)
-        #self.window.mainloop()
+
         
         statisticsButton = tk.Button(self.window, text="View Statistics") #add command=function as a parameter
         statisticsButton.pack()
