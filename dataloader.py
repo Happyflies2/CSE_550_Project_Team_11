@@ -6,6 +6,7 @@ Classes:
 """
 import pandas as pd
 import numpy as np
+from datetime import datetime
 
 class Data:
     def __init__(self, filePath):
@@ -37,8 +38,8 @@ class Data:
             end_date = input("Enter end date (YYYY-MM-DD): ")
             
         #convert start_date and end_date strings to datetime objects
-        start_date = datetime.datetime.strptime(start_date, "%Y-%m-%d")
-        end_date = datetime.datetime.strptime(end_date, "%Y-%m-%d")
+        start_date = datetime.strptime(start_date, "%Y-%m-%d")
+        end_date = datetime.strptime(end_date, "%Y-%m-%d")
         
         #create condition to filter the summary dataframe based on user input
         condition = (self.dates >= start_date.strftime("%Y-%m-%d")) & (self.dates <= end_date.strftime("%Y-%m-%d"))

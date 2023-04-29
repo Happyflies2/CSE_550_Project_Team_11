@@ -142,11 +142,6 @@ class dataLoaderUI(Window):
             #check.pack()
             check.place(x=500, y=50+index*50)
             #checkBoxes.append(check)
-        #Button to view data once imported
-        
-        button = tk.Button(self.window, text="Import Data", width = 25, height = 5, bg = "black", fg = "white", command=self.gotoGraphPanel)
-        button.place(x=50, y=200)
-
 
 
 
@@ -161,9 +156,39 @@ class dataLoaderUI(Window):
         time_select = tk.Radiobutton(self.window, text="UTC",padx = 20, variable=self.time_zone_var, value=2)
         time_select.pack(anchor=tk.W)
         
+        
+        
+        #entry box for dates
+        #self.start_date_var = tk.StringVar()
+        #self.end_date_var = tk.StringVar()
+        
+        
+        start_date_label = tk.Label(self.window, text="Start Date: ")
+        start_date_label.pack()
+        self.start_date_entry = tk.Entry(self.window, bd=5)
+        self.start_date_entry.pack()
+        
+        end_date_label = tk.Label(self.window, text="End Date: ")
+        end_date_label.pack()
+        self.end_date_entry = tk.Entry(self.window, bd=5)
+        self.end_date_entry.pack()
+        
+        
+        #Button to view data once imported
+        
+        button = tk.Button(self.window, text="Import Data", width = 25, height = 5, bg = "black", fg = "white", command=self.confirmEntryBoxes)#command=self.gotoGraphPanel)
+        button.place(x=50, y=200)
+
+
         self.window.mainloop
             
-
+    def confirmEntryBoxes(self):
+        self.start_date = self.start_date_entry.get()
+        self.end_date = self.end_date_entry.get()
+        print(self.start_date, self.end_date)
+        self.gotoGraphPanel()
+        
+        
     #selecting attributes
     def attributeSelection(self, dataFrame):
         #attribute selection
@@ -180,10 +205,10 @@ class dataLoaderUI(Window):
     #go to graph panel UI
     def gotoGraphPanel(self):
         df = self.dataLoader.data.summary
-        self.graphPanel = GraphPanel(self.dataLoader.data,self.attributeSelection(df), self.window)
+        self.graphPanel = GraphPanel(self.dataLoader.data,self.attributeSelection(df), self.window, self.start_date, self.end_date)
         
 class GraphPanel(Window):
-    def __init__(self, data,attributes, win):
+    def __init__(self, data,attributes, win, start, end):
         self.data = data
         #if we pass a tkinter window, then don't create new window
         if (win):
@@ -192,6 +217,8 @@ class GraphPanel(Window):
             self.createWindow()
             
         self.attributes = attributes
+        self.start = start
+        self.end = end
         self.setUpWindow()
     
     def setUpWindow(self):
@@ -214,11 +241,11 @@ class GraphPanel(Window):
     def plot(self, method):
         self.clearWindow()
         
-        data = self.data.summary
-        time = self.data.times
-        #columns = data.columns[3:-1]
+        #data = self.data.filterData(self.start, self.end)
+        data = self.data.summary    
         data = data[self.attributes]
         columns = data.columns
+        
         
         fig = Figure(figsize = (5, 5), dpi = 100, tight_layout=True)
 
