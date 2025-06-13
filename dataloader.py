@@ -54,6 +54,29 @@ class Data:
         filtered_data.meta = self.meta
         filtered_data.preprocessTime()
         return filtered_data
+    
+    def displayStats(self):
+        #Create a list of all column names except the datetime column
+        colNames = [col for col in self.summary.columns if col != 'Datetime (UTC)']
+
+        #Calculate the average and median for each column
+        results = {}
+        for col in colNames:
+            values = self.summary[col].dropna()
+            if len(values) > 0:
+                results[col] = {'average': values.mean(), 'median': values.median()}
+
+        #Display the results in a messagebox
+        if len(results) > 0:
+            message = 'Statistics:\n\n'
+            for col, stats in results.items():
+                message += f'{col}:\n  Average: {stats["average"]:.2f}\n  Median: {stats["median"]:.2f}\n\n'
+            messagebox.showinfo('Data Statistics', message)
+        else:
+            messagebox.showwarning('Data Statistics', 'No data available.')
+
+        #Return the results
+        return results
 
 class DataLoader:
     #function: adds data stream to list
